@@ -1,14 +1,17 @@
 from fastapi import FastAPI
-from db import get_all_players
-from db import get_all_coaches
-from db import get_player_details
+from fastapi.middleware.cors import CORSMiddleware
+from db import get_all_players, get_all_coaches, get_player_details
 
+app = FastAPI(title="🏀 NBA Player API")
 
-
-import pprint
-from fastapi.responses import PlainTextResponse
-
-app = FastAPI(title="NBA Player API")
+# Allow frontend access (important for Streamlit requests)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, restrict this!
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/players")
 def fetch_players():
@@ -21,9 +24,8 @@ def fetch_coaches():
     return {"coaches": coaches}
 
 @app.get("/player/{number}")
-def player_full_info(number: int):
-    result = get_player_details(number)
-    if result:
-        return result
-    else:
-        return {"error": "Player not found."}
+def fetch_player(number: int):
+    player = get_player_details(number)
+    if player:
+        return {"player": dict(player)}
+    return {"error": "Player not found."}

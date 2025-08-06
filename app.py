@@ -1,71 +1,64 @@
 import streamlit as st
 import requests
 
-st.set_page_config(page_title="Basketball DB", layout="centered")
-
-# App title
+st.set_page_config(page_title="🏀 Basketball DB", layout="centered")
 st.title("🏀 Basketball Database Viewer")
 
-# Initialize session state
-if "search_click" not in st.session_state:
-    st.session_state.search_click = False
-
-# Create 3 columns for side-by-side buttons
+# Buttons layout
 col1, col2, col3 = st.columns(3)
 
-# Show all players
+# API base URL
+API_BASE = "http://localhost:8000"
+
+# Show All Players
 with col1:
     if st.button("Show All Players"):
         with st.spinner("Loading players..."):
-            url = "http://localhost:8000/players/"
-            resp = requests.get(url)
+            resp = requests.get(f"{API_BASE}/players")
             if resp.status_code == 200:
                 data = resp.json()
-                if "players" in data:
-                    st.subheader("All Players")
-                    for p in data["players"]:
-                        st.markdown(f"- **{p['name']}** | Age: {p['age']} | Number: {p['number']}")
-                else:
-                    st.error("Unexpected format: 'players' key missing")
+                players = data.get("players", [])
+                st.subheader("All Players")
+                for p in players:
+                    st.markdown(f"• **{p['name']}** | Age: {p['age']} | Number: {p['number']}")
             else:
                 st.error("Failed to fetch players.")
 
-# Show all coaches
+# Show All Coaches
 with col2:
     if st.button("Show All Coaches"):
         with st.spinner("Loading coaches..."):
-            url = "http://localhost:8000/coaches/"
-            resp = requests.get(url)
+            resp = requests.get(f"{API_BASE}/coaches")
             if resp.status_code == 200:
                 data = resp.json()
-                if "coaches" in data:
-                    st.subheader("All Coaches")
-                    for c in data["coaches"]:
-                        st.markdown(f"- **{c['name']}**")
-                else:
-                    st.error("Unexpected format: 'coaches' key missing")
+                coaches = data.get("coaches", [])
+                st.subheader("All Coaches")
+                for c in coaches:
+                    st.markdown(f"• **{c['name']}**")
             else:
                 st.error("Failed to fetch coaches.")
 
-# Search section (button toggles visibility)
+# Search Player by Jersey Number
 with col3:
     if st.button("Search by Number"):
-        st.session_state.search_click = not st.session_state.search_click
+        st.session_state.show_search = not st.session_state.get("show_search", False)
 
-# Conditional search input
-if st.session_state.search_click:
+if st.session_state.get("show_search", False):
+    st.subheader("🔍 Search Player by Number")
     number = st.number_input("Enter Jersey Number", min_value=0, step=1)
     if st.button("Search"):
         with st.spinner("Searching..."):
-            url = f"http://localhost:8000/player/{number}"
-            resp = requests.get(url)
+            resp = requests.get(f"{API_BASE}/player/{number}")
             if resp.status_code == 200:
-                player = resp.json()
-                if "player" in player and player["player"] and "name" in player["player"]:
-                    st.success("Player Found!")
-                    st.write(f"**Name:** {player['player']['name']}")
-
+                data = resp.json()
+                if "player" in data:
+                    player = data["player"]
+                    st.success("✅ Player Found")
+                    st.write(f"**Name:** {player['name']}")
+                    st.write(f"**Age:** {player['age']}")
+                    st.write(f"**Height:** {player['height']} m")
+                    st.write(f"**Weight:** {player['weight']} kg")
                 else:
-                    st.error("No player found with that number.")
+                    st.warning("No player found with that number.")
             else:
-                st.error("Error fetching data.")
+                st.error("API error occurred.")
