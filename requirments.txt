@@ -1,0 +1,4 @@
+fastapi
+streamlit
+requests
+neo4j
