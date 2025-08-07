@@ -1,12 +1,12 @@
 
-# launcher.py
 import subprocess
+
 import time
 
-# Run FastAPI
+#api run
 fastapi_process = subprocess.Popen(["uvicorn", "main:app", "--reload"])
 print("FastAPI started...")
 time.sleep(2)
 
-# Run Streamlit
+#streamlit run
 subprocess.run(["streamlit", "run", "app.py"])

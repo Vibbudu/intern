@@ -1,12 +1,6 @@
 from neo4j import GraphDatabase
-import logging
 import time
 
-# Logger setup
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Neo4j Config
 NEO4J_URI = "neo4j://127.0.0.1:7687"
 NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = "password"
@@ -22,8 +16,7 @@ def get_all_players():
                        p.height AS height, p.weight AS weight
             """)
             return [dict(record) for record in result]
-    except Exception as e:
-        logger.error(f"Error fetching players: {e}")
+    except:
         return []
 
 def get_all_coaches():
@@ -34,21 +27,18 @@ def get_all_coaches():
                 RETURN c.name AS name
             """)
             return [dict(record) for record in result]
-    except Exception as e:
-        logger.error(f"Error fetching coaches: {e}")
+    except:
         return []
 
 def get_player_details(number: int):
     try:
         with driver.session() as session:
-            start = time.time()
+            
             result = session.run("""
                 MATCH (p:PLAYER {number: $number})
                 RETURN p.name AS name, p.age AS age, p.height AS height, p.weight AS weight, p.number AS number
             """, {"number": number})
-            duration = time.time() - start
-            logger.info(f"Query took {duration:.2f}s")
-            return result.single()
-    except Exception as e:
-        logger.error(f"Error fetching player details: {e}")
+            
+            return dict(result.single())
+    except:
         return None
