@@ -1,5 +1,9 @@
 fastapi
+uvicorn[standard]
+neo4j
+pydantic
 streamlit
 requests
-neo4j
-uvicorn
+pandas
+plotly
+pyvis

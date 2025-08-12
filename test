@@ -1,0 +1,63 @@
+import streamlit as st
+import requests
+
+st.title("NBA Player Info Lookup")
+
+if "search_clicked" not in st.session_state:
+    st.session_state.search_clicked = False
+
+# Search button
+if st.button("hey search here"):
+    st.session_state.search_clicked = True
+
+# Input and fetch
+if st.session_state.search_clicked:
+    player_number = st.number_input("Enter Player Jersey Number", min_value=0, step=1)
+
+    if st.button("ok"):
+        with st.spinner("Fetching player info..."):
+            url = f"http://localhost:8000/player/{player_number}"
+            resp = requests.get(url)
+            if resp.status_code == 200:
+                data = resp.json()
+                if "error" not in data:
+                    st.write(f"**Player Name:** {data['player']['name']}")
+                    st.write(f"**Jersey Number:** {data['player']['number']}")
+                    st.write(f"**Age:** {data['player']['age']}")
+                    st.write(f"**Coach:** {data['coach']['name']}")
+                    st.write(f"**Club:** {data['club']['name']}")
+                    st.success(f"⏱️ Query Time: {data['query_time']} seconds")
+                else:
+                    st.error(data['error'])
+            else:
+                st.error("Failed to fetch data from the API.")
+
+if st.button("show players"):
+    with st.spinner("wait nigga..."):
+        url = f"http://localhost:8000/players/"
+        resp = requests.get(url)
+        if resp.status_code == 200:
+            data = resp.json()
+            if "error" not in data:
+                for player in data['players']:
+                    st.write(f"**Player Name:** {player['name']}")
+            else:
+                st.error(data['error'])
+        else:
+            st.error("failed to fetch data niga")
+            
+if st.button("show coaches"):
+    with st.spinner("wait..."):
+        url = f"http://localhost:8000/coaches/"
+        resp = requests.get(url)
+        if resp.status_code == 200:
+            data = resp.json()
+            if "coaches" in data:
+                for coach in data['coaches']:
+                    st.write(f"**Coach Name:** {coach['name']}")
+            else:
+                st.error(data.get('error', 'Unexpected response format'))
+        else:
+            st.error("Failed to fetch data")
+
+
