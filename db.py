@@ -75,12 +75,18 @@ def get_player_performance(number: int) -> List[Dict]:
     with driver.session() as session:
         q = """
             MATCH (p:PLAYER {number: $number})-[pa:PLAYED_AGAINST]->(opp:TEAM)
-            RETURN opp.name AS opponent, pa.minutes AS minutes, pa.points AS points,
-                   pa.assists AS assists, pa.rebounds AS rebounds, pa.turnovers AS turnovers
-            ORDER BY pa.points DESC
+            RETURN opp.name AS opponent,
+                   pa.date AS game_date,  // <-- add this if it exists
+                   pa.minutes AS minutes,
+                   pa.points AS points,
+                   pa.assists AS assists,
+                   pa.rebounds AS rebounds,
+                   pa.turnovers AS turnovers
+            ORDER BY pa.date ASC
         """
         result = session.run(q, {"number": number})
         return _records_to_list(result)
+
 
 
 def compare_players(num1: int, num2: int) -> Dict:
